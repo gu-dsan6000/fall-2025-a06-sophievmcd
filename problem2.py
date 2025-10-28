@@ -132,9 +132,9 @@ def get_timeline(df):
     df = df.withColumn(
         "timestamp",
         F.coalesce(
-            F.to_timestamp("timestamp_str", "yy/MM/dd HH:mm:ss"),
-            F.to_timestamp("timestamp_str", "yyyy-MM-dd HH:mm:ss"),
-            F.to_timestamp("timestamp_str", "MM/dd/yyyy HH:mm:ss")
+            F.expr("try_to_timestamp(timestamp_str, 'yy/MM/dd HH:mm:ss')"),
+            F.expr("try_to_timestamp(timestamp_str, 'yyyy-MM-dd HH:mm:ss')"),
+            F.expr("try_to_timestamp(timestamp_str, 'MM/dd/yyyy HH:mm:ss')")
         )
     )
 
@@ -154,8 +154,8 @@ def get_timeline(df):
     )
 
     # save and log
-    timeline_df.toPandas().to_csv("data/output/problem2_timeline.csv", index=False)
-    logger.info("Saved timeline to data/output/problem2_timeline.csv")
+    timeline_df.toPandas().to_csv("/home/ubuntu/spark-cluster/problem2_timeline.csv", index=False)
+    logger.info("Saved timeline to /home/ubuntu/spark-cluster/problem2_timeline.csv")
 
     logger.info(f"Raw log lines: {df.count()}")
 
@@ -166,6 +166,7 @@ def get_timeline(df):
     )
 
     return timeline_df
+   
 
 
 
@@ -189,8 +190,8 @@ def get_cluster_summary(timeline_df):
                    .orderBy(F.desc("num_applications"))
     )
 
-    cluster_summary_df.toPandas().to_csv("data/output/problem2_cluster_summary.csv", index=False)
-    logger.info("Saved cluster summary to data/output/problem2_cluster_summary.csv")
+    cluster_summary_df.toPandas().to_csv("/home/ubuntu/spark-cluster/problem2_cluster_summary.csv", index=False)
+    logger.info("Saved cluster summary to /home/ubuntu/spark-cluster/problem2_cluster_summary.csv")
     return cluster_summary_df
 
 
@@ -225,9 +226,9 @@ def get_overall_summary(cluster_summary_df):
     for r in top_clusters:
         lines.append(f"  Cluster {r['cluster_id']}: {r['num_applications']} applications")
 
-    with open("data/output/problem2_stats.txt", "w") as f:
+    with open("/home/ubuntu/spark-cluster/problem2_stats.txt", "w") as f:
         f.write("\n".join(lines))
-    logger.info("Saved overall stats to data/output/problem2_stats.txt")
+    logger.info("Saved overall stats to /home/ubuntu/spark-cluster/problem2_stats.txt")
     return lines
  
 
@@ -253,9 +254,9 @@ def get_bar_chart(cluster_summary_df):
         plt.text(i, row.num_applications + 0.5, str(row.num_applications), ha="center")
 
     plt.tight_layout()
-    plt.savefig("data/output/problem2_bar_chart.png")
+    plt.savefig("/home/ubuntu/spark-cluster/problem2_bar_chart.png")
     plt.close()
-    logger.info("Saved bar chart to data/output/problem2_bar_chart.png")
+    logger.info("Saved bar chart to /home/ubuntu/spark-cluster/problem2_bar_chart.png")
 
 
 def get_density_plot(timeline_df, cluster_summary_df):
@@ -282,9 +283,9 @@ def get_density_plot(timeline_df, cluster_summary_df):
     plt.ylabel("Frequency")
     plt.title(f"Duration Distribution – Cluster {top_cluster} (n={len(cluster_df)})")
     plt.tight_layout()
-    plt.savefig("data/output/problem2_density_plot.png")
+    plt.savefig("/home/ubuntu/spark-cluster/problem2_density_plot.png")
     plt.close()
-    logger.info("Saved density plot to data/output/problem2_density_plot.png")
+    logger.info("Saved density plot to /home/ubuntu/spark-cluster/problem2_density_plot.png")
 
 
 
@@ -298,15 +299,15 @@ def main():
     success = False
 
     try:
-        # read files - from sample dir here
-        logger.info("Reading logs")
+        # read files 
+        input_path = "s3a://svm37-assignment-spark-cluster-logs/data/"
+        logger.info(f"Reading input logs from {input_path}")
         df = (
             spark.read
             .option("recursiveFileLookup", "true")
-            .text("data/sample/")
-        ) # changed here due to errors
+            .text(input_path)
+        )
         logger.info(f"✅ Loaded {df.count()} raw lines from data/sample/")
-
 
         # timeline
         logger.info("Building time series.")

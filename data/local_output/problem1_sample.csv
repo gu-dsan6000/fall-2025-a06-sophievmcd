@@ -1,0 +1,11 @@
+log_entry,log_level
+17/03/29 10:03:21 INFO storage.BlockManager: Found block rdd_2_6 locally,INFO
+"17/03/29 09:55:47 INFO storage.MemoryStore: Block broadcast_6 stored as values in memory (estimated size 2.9 KB, free 4.5 KB)",INFO
+17/03/29 10:04:44 INFO AMRMClientImpl: Received new token for : mesos-slave-09:51130,INFO
+17/03/29 09:55:47 INFO storage.ShuffleBlockFetcherIterator: Started 0 remote fetches in 8 ms,INFO
+17/03/29 10:03:21 INFO executor.CoarseGrainedExecutorBackend: Got assigned task 38,INFO
+17/03/29 10:04:57 INFO executor.Executor: Running task 7.0 in stage 3.0 (TID 48),INFO
+17/03/29 10:03:21 INFO executor.Executor: Running task 16.0 in stage 2.0 (TID 37),INFO
+17/03/29 10:04:59 INFO storage.ShuffleBlockFetcherIterator: Started 2 remote fetches in 2 ms,INFO
+"17/03/29 10:04:52 INFO spark.CacheManager: Partition rdd_2_7 not found, computing it",INFO
+17/03/29 10:11:17 INFO storage.ShuffleBlockFetcherIterator: Started 0 remote fetches in 0 ms,INFO

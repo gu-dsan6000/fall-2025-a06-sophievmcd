@@ -115,7 +115,7 @@ def get_log_level_counts(df):
         .orderBy(F.desc("count"))
     )
 
-    counts_df.toPandas().to_csv("data/output/problem1_counts.csv", index=False)
+    counts_df.toPandas().to_csv("/home/ubuntu/spark-cluster/problem1_counts.csv", index=False)
     logger.info("Saved log level counts to data/output/problem1_counts.csv")
     return counts_df, df_with_level
 
@@ -135,7 +135,7 @@ def get_log_sample(df_with_level):
         .limit(10)
         .select(F.col("value").alias("log_entry"), "log_level")
     )
-    sample_10_df.toPandas().to_csv("data/output/problem1_sample.csv", index=False)
+    sample_10_df.toPandas().to_csv("/home/ubuntu/spark-cluster/problem1_sample.csv", index=False)
     logger.info("Saved 10 randomly sampled log entries to data/output/problem1_sample.csv")
     return sample_10_df
 
@@ -172,7 +172,7 @@ def get_sum_stats(df_with_level, counts_df):
         pct = (row['count'] / total_detected) * 100
         summary_lines.append(f"{row['log_level']:6}: {row['count']:10,} ({pct:6.2f}%)")
 
-    with open("data/output/problem1_summary.txt", "w") as f:
+    with open("/home/ubuntu/spark-cluster/problem1_summary.txt", "w") as f:
         f.write("\n".join(summary_lines))
 
     logger.info("Saved summary statistics to data/output/problem1_summary.txt")
@@ -197,7 +197,7 @@ def main():
             print("   or: export MASTER_PRIVATE_IP=xxx.xxx.xxx.xxx")
             return 1
 
-    # create spark session and save parquet to df
+    # create spark session
     logger.info("Initializing Spark session")
     spark = create_spark_session(master_url)
     success = False
@@ -205,7 +205,13 @@ def main():
     try:
         # read files - from sample dir here
         logger.info("Reading logs")
-        df = spark.read.text("data/raw/**")
+        input_path = "s3a://svm37-assignment-spark-cluster-logs/data/"
+        logger.info(f"Reading input logs from {input_path}")
+        df = (
+            spark.read
+            .option("recursiveFileLookup", "true")
+            .text(input_path)
+        )
 
         # Log level counts
         logger.info("Computing log level counts.")
