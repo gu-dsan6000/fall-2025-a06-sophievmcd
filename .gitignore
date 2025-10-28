@@ -67,3 +67,4 @@ test-iam-detection.sh
 # local testing
 problem1-local.py
 problem2-local.py
+/local_output
